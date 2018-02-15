@@ -1,0 +1,162 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getProposedQuestion",
+    "outputs": [
+      {
+        "name": "question",
+        "type": "bytes"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getVote",
+    "outputs": [
+      {
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "name": "vote",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "destroy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getTotalVotes",
+    "outputs": [
+      {
+        "name": "totalVotes",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "openVoting",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "chosenVote",
+        "type": "uint8"
+      }
+    ],
+    "name": "vote",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "closeVoting",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "question",
+        "type": "bytes"
+      },
+      {
+        "name": "zkVerificator",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "wasSuccessful",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "VoteEvent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "wasSuccessful",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "ChangeEvent",
+    "type": "event"
+  }
+]
