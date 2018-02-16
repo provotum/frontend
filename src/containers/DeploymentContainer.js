@@ -14,6 +14,7 @@ class DeploymentContainer extends React.Component {
   constructor(props) {
     super(props);
 
+    // Instantiate web3, set default account & unlock
     let provider = new Web3.providers.HttpProvider('http://127.0.0.1:8502');
     this.web3 = new Web3(provider);
     this.web3.eth.defaultAccount = this.web3.eth.coinbase;
@@ -38,20 +39,6 @@ class DeploymentContainer extends React.Component {
 
     axios.defaults.baseURL = 'http://localhost:8080';
   }
-
-  /*componentWillMount() {
-   // get web3 instance connecting to http://localhost:850X
-   getWeb3
-   .then(results => {
-   this.setState({
-   web3: results.web3
-   });
-
-   })
-   .catch(() => {
-   console.log('Error finding web3. Make sure geth is running.');
-   });
-   }*/
 
   componentDidMount() {
     // http://localhost:8080/sockjs-websocket
@@ -129,21 +116,6 @@ class DeploymentContainer extends React.Component {
         }
       });
     }
-
-    /*let query = "ballot/" + address + "/question";
-     axios.post(query)
-     .then((response) => {
-     logger.log(response);
-
-     this.setState({
-     contractAddress: address
-     });
-
-     })
-     .catch(function (error) {
-     logger.log(error);
-     });*/
-
   }
 
   onQuestionReceived(msg) {
@@ -172,11 +144,16 @@ class DeploymentContainer extends React.Component {
 
     // TODO Test web3 trx submission and log output to console
     let ballotContract = this.web3.eth.contract(abi).at(this.state.contractAddress);
-    ballotContract.vote.call({
-      arguments: numericVote
-    }).then(function (receipt) {
-      logger.log("receipt:" + receipt);
+    ballotContract.vote(numericVote, function(err,result){
+      if(err){
+        logger.log('err:' + err);
+      }else{
+        logger.log('result' + result);
+      }
     });
+
+    // TODO Remove everything below REST / Websocket related since now we need to wait for the TX to be mined
+    // TODO Integrate if(result = 'receipt') or similar as soon as the Tx was mined.
 
     let query = "ballot/" + this.state.contractAddress + "/vote";
     axios.post(query, {
@@ -248,168 +225,7 @@ class DeploymentContainer extends React.Component {
 DeploymentContainer.propTypes = {};
 export default DeploymentContainer;
 
-let abi = [
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getProposedQuestion",
-    "outputs": [
-      {
-        "name": "question",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "getVote",
-    "outputs": [
-      {
-        "name": "voter",
-        "type": "address"
-      },
-      {
-        "name": "vote",
-        "type": "uint8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "destroy",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getTotalVotes",
-    "outputs": [
-      {
-        "name": "totalVotes",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "openVoting",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "chosenVote",
-        "type": "uint8"
-      }
-    ],
-    "name": "vote",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      },
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "closeVoting",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "question",
-        "type": "string"
-      },
-      {
-        "name": "zkVerificator",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "wasSuccessful",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "name": "reason",
-        "type": "string"
-      }
-    ],
-    "name": "VoteEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "wasSuccessful",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "name": "reason",
-        "type": "string"
-      }
-    ],
-    "name": "ChangeEvent",
-    "type": "event"
-  }
-];
+let abi = [{"constant":true,"inputs":[],"name":"getProposedQuestion","outputs":[{"name":"question","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"index","type":"uint256"}],"name":"getVote","outputs":[{"name":"voter","type":"address"},{"name":"vote","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"destroy","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getTotalVotes","outputs":[{"name":"totalVotes","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"openVoting","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"chosenVote","type":"uint8"}],"name":"vote","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"closeVoting","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"question","type":"string"},{"name":"zkVerificator","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":false,"name":"wasSuccessful","type":"bool"},{"indexed":false,"name":"reason","type":"string"}],"name":"VoteEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":false,"name":"wasSuccessful","type":"bool"},{"indexed":false,"name":"reason","type":"string"}],"name":"ChangeEvent","type":"event"}];
 
 const
   smallColResponsiveProps = {
