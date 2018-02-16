@@ -6,7 +6,7 @@ import StatusCard from "../components/cards/StatusCard";
 import FetchQuestionBtnCard from "../components/cards/FetchQuestionBtnCard";
 import {Col, Row} from "antd";
 import axios from "axios";
-import getWeb3 from "../getWeb3";
+import Web3 from 'web3';
 import VoteBtnCard from "../components/cards/VoteBtnCard";
 
 class DeploymentContainer extends React.Component {
@@ -14,13 +14,17 @@ class DeploymentContainer extends React.Component {
   constructor(props) {
     super(props);
 
+    let provider = new Web3.providers.HttpProvider('http://127.0.0.1:8502');
+    this.web3 = new Web3(provider);
+    this.web3.eth.defaultAccount = this.web3.eth.coinbase;
+    this.web3.personal.unlockAccount(this.web3.eth.defaultAccount, "password123");
+
     this.state = {
       lastOccurredEvent: null,
       isConnected: false,
       contractAddress: null,
       votingQuestion: null,
-      votingTrxHash: null,
-      web3: null
+      votingTrxHash: null
     };
 
     this.onQuestionSubscription = null;
@@ -35,18 +39,19 @@ class DeploymentContainer extends React.Component {
     axios.defaults.baseURL = 'http://localhost:8080';
   }
 
-  componentWillMount() {
-    // get web3 instance connecting to http://localhost:850X
-    getWeb3
-      .then(results => {
-        this.setState({
-          web3: results.web3
-        });
-      })
-      .catch(() => {
-        console.log('Error finding web3. Make sure geth is running.');
-      });
-  }
+  /*componentWillMount() {
+   // get web3 instance connecting to http://localhost:850X
+   getWeb3
+   .then(results => {
+   this.setState({
+   web3: results.web3
+   });
+
+   })
+   .catch(() => {
+   console.log('Error finding web3. Make sure geth is running.');
+   });
+   }*/
 
   componentDidMount() {
     // http://localhost:8080/sockjs-websocket
@@ -109,32 +114,39 @@ class DeploymentContainer extends React.Component {
   }
 
   requestQuestion(address) {
-
-    let ballotContract = this.state.web3.eth.contract(abi);
-    let ballotContractInstance = ballotContract.at(address);
-    let proposedQuestion = ballotContractInstance.getProposedQuestion();
-    logger.log("ballotContractInstance.getProposedQuestion()" + proposedQuestion);
-
-    // TODO: Replace REST request / Websocket answer with proper Web3 implementation.
-    // TODO: Error Handling if address not proper
-
-    let query = "ballot/" + address + "/question";
-    axios.post(query)
-      .then((response) => {
-        logger.log(response);
-
-        this.setState({
-          contractAddress: address
-        });
-
-      })
-      .catch(function (error) {
-        logger.log(error);
+    // Check validity of address before requesting
+    if (this.web3.isAddress(address)) {
+      // Instantiate contract from abi & contract address provided via GUI
+      let ballotContract = this.web3.eth.contract(abi).at(address);
+      ballotContract.getProposedQuestion((err, res) => {
+        if (!err) {
+          this.setState({
+            contractAddress: address,
+            votingQuestion: res
+          });
+        } else {
+          logger.log(err);
+        }
       });
+    }
+
+    /*let query = "ballot/" + address + "/question";
+     axios.post(query)
+     .then((response) => {
+     logger.log(response);
+
+     this.setState({
+     contractAddress: address
+     });
+
+     })
+     .catch(function (error) {
+     logger.log(error);
+     });*/
+
   }
 
   onQuestionReceived(msg) {
-
     this.setState((previousState, props) => {
       if (msg.hasOwnProperty('responseType') && msg.status === 'success') {
         if (msg.responseType === 'get-question-event') {
@@ -157,6 +169,14 @@ class DeploymentContainer extends React.Component {
 
   submitVote(vote) {
     let numericVote = parseInt(vote.vote);
+
+    // TODO Test web3 trx submission and log output to console
+    let ballotContract = this.web3.eth.contract(abi).at(this.state.contractAddress);
+    ballotContract.vote.call({
+      arguments: numericVote
+    }).then(function (receipt) {
+      logger.log("receipt:" + receipt);
+    });
 
     let query = "ballot/" + this.state.contractAddress + "/vote";
     axios.post(query, {
@@ -206,6 +226,7 @@ class DeploymentContainer extends React.Component {
           <Col {...smallColResponsiveProps}>
             <FetchQuestionBtnCard
               isConnected={this.state.isConnected}
+              web3={this.state.web3}
               actions={{onClickHandler: this.requestQuestionClickHandler}}/>
           </Col>
           <Col {...smallColResponsiveProps}>

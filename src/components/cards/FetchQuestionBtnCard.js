@@ -32,7 +32,8 @@ class FetchQuestionBtnCard extends React.Component {
       isButtonDisabled = true;
     }
 
-    let isInputDisabled = (this.props.isConnected && (this.props.web3 != null)) ? false : true;
+    let isInputDisabled = (this.props.isConnected) ? false : true;
+
 
     return (
       <Card title="Fetch Question Panel">
@@ -42,9 +43,11 @@ class FetchQuestionBtnCard extends React.Component {
               {getFieldDecorator('address', {
                 rules: [{required: true, message: 'Please enter the ballot contract address'}]
               })(
-                <Input disabled={isInputDisabled}
-                       prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
-                       placeholder="Ballot Contract Address"/>
+                <Input
+                  disabled={isInputDisabled}
+                  prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
+                  placeholder="Ballot Contract Address"
+                />
               )}
             </Form.Item>
           </Row>
@@ -61,7 +64,6 @@ class FetchQuestionBtnCard extends React.Component {
 }
 
 FetchQuestionBtnCard.propTypes = {
-  web3: PropTypes.object.isRequired,
   isConnected: PropTypes.bool.isRequired,
   actions: PropTypes.shape({
     onClickHandler: PropTypes.func.isRequired
