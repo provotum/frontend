@@ -1,5 +1,5 @@
 import React from "react";
-import {Badge, Card, Steps, Icon} from "antd";
+import {Alert, Badge, Card, Steps, Icon} from "antd";
 import PropTypes from "prop-types";
 
 const Step = Steps.Step;
@@ -57,10 +57,17 @@ export default class StatusCard extends React.Component {
     return (
       <Card title="Current Status" extra={<Badge style={{backgroundColor: backgroundColor}} count={connectionStatus}/>}>
         <Steps current={currentStep} size="small">
-          {stepConfiguration.steps.map((item, idx) => <Step key={item.title} title={item.title} icon={(() => ((idx === currentStep && currentStep === 0 && ! this.props.isConnected)) ? <Icon type="loading"/> : '')()}/>)}
+          {stepConfiguration.steps.map((item, idx) => <Step key={item.title} title={item.title}
+                                                            icon={(() => ((idx === currentStep && currentStep === 0 && !this.props.isConnected)) ?
+                                                              <Icon type="loading"/> : '')()}/>)}
         </Steps>
         <div className="steps-content" style={{background: "#fafafa", marginTop: "16px", padding: '10px'}}>
-          {stepConfiguration.steps[this.getCurrentStep()].content}
+          <Alert
+            message={(() =>
+              ((this.props.isConnected === true) ? stepConfiguration.steps[this.getCurrentStep()].content : "Lost Websocket connection, trying to reconnect."))()}
+            type={(() =>
+              ((this.props.isConnected === true) ? "info" : "error"))()}
+          />
         </div>
       </Card>
     );
