@@ -5,7 +5,7 @@ let getWeb3 = new Promise(function (resolve, reject) {
 
   window.addEventListener('load', function () {
     let results;
-    let provider = new Web3.providers.HttpProvider('http://127.0.0.1:8502');
+    let provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
     let web3 = new Web3(provider);
     //web3.defaultAccount = results.web3.eth.accounts[0];
     //web3.personal.unlockAccount(results.web3.eth.defaultAccount);
