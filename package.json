@@ -15,6 +15,7 @@
     "antd": "^3.1.4",
     "axios": "^0.17.1",
     "babel-polyfill": "6.8.0",
+    "dotenv-webpack": "^1.5.4",
     "jquery": "2.2.3",
     "json-loader": "^0.5.7",
     "prop-types": "^15.6.0",

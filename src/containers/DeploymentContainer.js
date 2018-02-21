@@ -6,8 +6,9 @@ import StatusCard from "../components/cards/StatusCard";
 import FetchQuestionBtnCard from "../components/cards/FetchQuestionBtnCard";
 import {Col, Row} from "antd";
 import axios from "axios";
-import Web3 from 'web3';
+import Web3 from "web3";
 import VoteBtnCard from "../components/cards/VoteBtnCard";
+
 
 class DeploymentContainer extends React.Component {
 
@@ -15,10 +16,15 @@ class DeploymentContainer extends React.Component {
     super(props);
 
     // Instantiate web3, set default account & unlock
-    let provider = new Web3.providers.HttpProvider('http://localhost:8545');
+    // introduce config file
+    logger.log(process.env.GETH_NODE);
+    logger.log(process.env.GETH_PASSWORD);
+    logger.log(process.env.GETH_ACCOUNT);
+
+    let provider = new Web3.providers.HttpProvider(process.env.GETH_NODE);
     this.web3 = new Web3(provider);
-    this.web3.eth.defaultAccount = this.web3.eth.accounts[2];
-    this.web3.personal.unlockAccount(this.web3.eth.defaultAccount, "test");
+    this.web3.eth.defaultAccount = this.web3.eth.accounts[process.env.GETH_ACCOUNT];
+    this.web3.personal.unlockAccount(this.web3.eth.defaultAccount, process.env.GETH_PASSWORD);
 
     this.state = {
       lastOccurredEvent: null,
@@ -37,13 +43,13 @@ class DeploymentContainer extends React.Component {
     this.onQuestionReceived = this.onQuestionReceived.bind(this);
     this.submitVoteClickHandler = this.submitVoteClickHandler.bind(this);
 
-    axios.defaults.baseURL = 'http://localhost:8080';
+    axios.defaults.baseURL = process.env.BACKEND;
   }
 
   componentDidMount() {
     // http://localhost:8080/sockjs-websocket
     this.stompClient = new StompClient(
-      "http://localhost:8080",
+      process.env.BACKEND,
       "/sockjs-websocket",
       () => logger.log("[stompclient] disconnected")
     );
@@ -84,7 +90,7 @@ class DeploymentContainer extends React.Component {
 
   reconnect() {
     this.stompClient = new StompClient(
-      "http://localhost:8080",
+      process.env.BACKEND,
       "/sockjs-websocket"
     );
 
@@ -156,7 +162,10 @@ class DeploymentContainer extends React.Component {
       // now we are ready to submit our vote
       let ballotContract = this.web3.eth.contract(abi).at(this.state.contractAddress);
       // random requires valueOf to be correctly encoded as hex string...
-      ballotContract.vote(response.data.ciphertext, response.data.proof, response.data.random.valueOf(), {gas: 4300000, gasPrice: "22000000000"}, function (err, result) {
+      ballotContract.vote(response.data.ciphertext, response.data.proof, response.data.random.valueOf(), {
+        gas: 4300000,
+        gasPrice: "22000000000"
+      }, function (err, result) {
         if (err) {
           logger.error('Submitting the vote failed: ' + err);
         } else {

@@ -1,7 +1,12 @@
-import webpack from 'webpack';
-import path from 'path';
+import webpack from "webpack";
+import path from "path";
+const Dotenv = require('dotenv-webpack');
 
 export default {
+
+  node: {
+    fs: "empty"
+  },
   debug: true,
   devtool: 'inline-source-map', // inline-source-map - A SourceMap is added as a DataUrl to the bundle. //
   noInfo: false, // Webpack will display a list of all the files that it's bundling, can be deactivated later
@@ -21,7 +26,11 @@ export default {
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(), // replace plugins without full browser refresh
-    new webpack.NoErrorsPlugin() // Keep errors for blaking hot reloading experience
+    new webpack.NoErrorsPlugin(), // Keep errors for blaking hot reloading experience
+    new Dotenv({
+      path: './.env', // Path to .env file (this is the default)
+      safe: true // load .env.example (defaults to "false" which does not use dotenv-safe)
+    })
   ],
   module: {
     noParse: /node_modules\/provotum-stomp-client\/lib\/sock-js\/sockjs.js/,
