@@ -8,6 +8,8 @@ import {Col, Row} from "antd";
 import axios from "axios";
 import Web3 from "web3";
 import VoteBtnCard from "../components/cards/VoteBtnCard";
+import ethTx from "ethereumjs-tx";
+import ethUtil from "ethereumjs-util";
 
 
 class DeploymentContainer extends React.Component {
@@ -23,8 +25,8 @@ class DeploymentContainer extends React.Component {
 
     let provider = new Web3.providers.HttpProvider(process.env.GETH_NODE);
     this.web3 = new Web3(provider);
-    this.web3.eth.defaultAccount = this.web3.eth.accounts[process.env.GETH_ACCOUNT];
-    this.web3.personal.unlockAccount(this.web3.eth.defaultAccount, process.env.GETH_PASSWORD);
+    //this.web3.eth.defaultAccount = this.web3.eth.accounts[process.env.GETH_ACCOUNT];
+    //this.web3.personal.unlockAccount(this.web3.eth.defaultAccount, process.env.GETH_PASSWORD);
 
     this.state = {
       lastOccurredEvent: null,
@@ -60,6 +62,7 @@ class DeploymentContainer extends React.Component {
       this.stompClient.connect(() => this.successCallback(), () => this.errorCallback());
     }
 
+    // create second axio instance only for retrieving private key from Mock Identity Provider
     if (this.state.votingPrivKey == null) {
       let mockIdentityProvider = axios.create({
         baseURL: process.env.MOCK_IDENTITY_PROVIDER
@@ -73,6 +76,7 @@ class DeploymentContainer extends React.Component {
           });
         })
         .catch(function (error) {
+          logger.log("Couldn't retrieve pkey");
           logger.log(error);
         });
     }
@@ -177,43 +181,44 @@ class DeploymentContainer extends React.Component {
         return;
       }
 
+      let rawTxTo = this.state.contractAddress;
+      let block = this.web3.eth.getBlock("latest");
+      const privKeyBuffer = Buffer.from(this.state.votingPrivKey, 'hex');
+      let rawTxFrom = '0x' + ethUtil.privateToAddress(privKeyBuffer).toString('hex');
+      let rawTxGasLimit = block.gasLimit;
+      let rawTxGasPrice = this.web3.toHex("22000000000");
+      let rawTxNonce = "0x00";
+      let rawTxValue = "0x0";
 
-      /*
-       // TODO try to send raw transaction
-       const txParams = {
-       nonce: '0x6', // Replace by nonce for your account on geth node
-       gasPrice: '0x09184e72a000',
-       gasLimit: '0x30000',
-       to: '0xfa3caabc8eefec2b5e2895e5afbf79379e7268a7',
-       value: '0x00'
-       };
-       // Transaction is created
-       const tx = new ethTx(txParams);
-       const privKey = Buffer.from('05a20149c1c76ae9da8457435bf0224a4f81801da1d8204cb81608abe8c112ca', 'hex');
-       // Transaction is signed
-       tx.sign(privKey);
-       const serializedTx = tx.serialize();
-       const rawTx = '0x' + serializedTx.toString('hex');
-       console.log(rawTx)
-       // TODO END EXAMPLE CODE
-       */
-
-
-      // now we are ready to submit our vote
       let ballotContract = this.web3.eth.contract(abi).at(this.state.contractAddress);
-      // random requires valueOf to be correctly encoded as hex string...
-      ballotContract.vote(response.data.ciphertext, response.data.proof, response.data.random.valueOf(), {
-        gas: 4300000,
-        gasPrice: "22000000000"
-      }, function (err, result) {
-        if (err) {
-          logger.error('Submitting the vote failed: ' + err);
-        } else {
-          logger.log('Successfully submitted the vote: ' + result);
-        }
+      let rawTxData = ballotContract.vote.getData(response.data.ciphertext, response.data.proof, response.data.random.valueOf());
+      let rawTxGas = this.web3.eth.estimateGas({to:rawTxTo, data: rawTxData});
+
+      const txParams = {
+        nonce: rawTxNonce,
+        gasPrice: rawTxGasPrice,
+        gasLimit: rawTxGasLimit,
+        to: rawTxTo,
+        from: rawTxFrom,
+        value: rawTxValue,
+        data: rawTxData,
+        gas: rawTxGas,
+        chainId: 15
+      };
+
+      const tx = new ethTx(txParams);
+      tx.sign(privKeyBuffer);
+      const serializedTx = tx.serialize();
+      const rawTx = '0x' + serializedTx.toString('hex');
+      logger.log("rawTx" + rawTx);
+      this.web3.eth.sendRawTransaction(rawTx.toString(), (msg) => {
+        logger.log(msg);
+        // Nonce too low after one try (Obviously would need to be increased,
+        // but this is actually not bad, so there can't be two votes with the same
+        // private key
       });
 
-    }).catch(error => logger.error('Failed to retrieve encrypted vote and proof: ' + error));
+      }).catch(error => logger.error('Failed to retrieve encrypted vote and proof: ' + error));
   }
 
   onIncorporatedVote(msg) {
