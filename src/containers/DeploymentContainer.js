@@ -10,23 +10,15 @@ import Web3 from "web3";
 import VoteBtnCard from "../components/cards/VoteBtnCard";
 import ethTx from "ethereumjs-tx";
 import ethUtil from "ethereumjs-util";
-
+import ChallengeVoteBtnCard from "../components/cards/ChallengeVoteBtnCard";
 
 class DeploymentContainer extends React.Component {
 
   constructor(props) {
     super(props);
 
-    // Instantiate web3, set default account & unlock
-    // introduce config file
-    logger.log(process.env.GETH_NODE);
-    logger.log(process.env.GETH_PASSWORD);
-    logger.log(process.env.GETH_ACCOUNT);
-
     let provider = new Web3.providers.HttpProvider(process.env.GETH_NODE);
     this.web3 = new Web3(provider);
-    //this.web3.eth.defaultAccount = this.web3.eth.accounts[process.env.GETH_ACCOUNT];
-    //this.web3.personal.unlockAccount(this.web3.eth.defaultAccount, process.env.GETH_PASSWORD);
 
     this.state = {
       lastOccurredEvent: null,
@@ -34,23 +26,21 @@ class DeploymentContainer extends React.Component {
       contractAddress: null,
       votingQuestion: null,
       votingTrxHash: null,
-      votingPrivKey: null
+      votingPrivateKey: null,
+      ciphertext: null,
+      proof: null,
+      random: null
     };
-
-    this.onQuestionSubscription = null;
-    this.onIncorporatedVoteSubscription = null;
 
     this.requestQuestion = this.requestQuestion.bind(this);
     this.requestQuestionClickHandler = this.requestQuestionClickHandler.bind(this);
-    this.onIncorporatedVote = this.onIncorporatedVote.bind(this);
-    this.onQuestionReceived = this.onQuestionReceived.bind(this);
+    this.generateProofClickHandler = this.generateProofClickHandler.bind(this);
     this.submitVoteClickHandler = this.submitVoteClickHandler.bind(this);
 
     axios.defaults.baseURL = process.env.BACKEND;
   }
 
   componentDidMount() {
-    // http://localhost:8080/sockjs-websocket
     this.stompClient = new StompClient(
       process.env.BACKEND,
       "/sockjs-websocket",
@@ -63,46 +53,42 @@ class DeploymentContainer extends React.Component {
     }
 
     // create second axio instance only for retrieving private key from Mock Identity Provider
-    if (this.state.votingPrivKey == null) {
+    if (this.state.votingPrivateKey == null) {
       let mockIdentityProvider = axios.create({
         baseURL: process.env.MOCK_IDENTITY_PROVIDER
       });
-      logger.log("MOCK_IDENTITY_PROVIDER");
+
       mockIdentityProvider.get('/wallets/next')
         .then((response) => {
-          logger.log("Writing pkey to state");
           this.setState({
-            votingPrivKey: response.data["private-key"]
+            votingPrivateKey: response.data["private-key"],
+            lastOccurredEvent: {
+              id: Date.now(),
+              status: 'success',
+              message: 'Private Key retrieved from Identity Provider'
+            }
           });
         })
         .catch(function (error) {
-          logger.log("Couldn't retrieve pkey");
-          logger.log(error);
+          this.setState({
+            lastOccurredEvent: {
+              id: Date.now(),
+              status: 'success',
+              message: 'Failed to retrieve private key from identity provider: ' + error
+            }
+          });
         });
     }
   }
 
-  componentWillUnmount() {
-    if (null !== this.onIncorporatedVoteSubscription) {
-      this.onIncorporatedVoteSubscription.unsubscribe();
-    }
-
-    if (null !== this.onQuestionSubscription) {
-      this.onQuestionSubscription.unsubscribe();
-    }
-  }
-
-  successCallback(msg) {
-    this.onIncorporatedVoteSubscription = this.stompClient.subscribe('/topic/votes', (msg) => this.onIncorporatedVote(msg));
-    this.onQuestionSubscription = this.stompClient.subscribe('/topic/meta', (msg) => this.onQuestionReceived(msg));
-
+  successCallback() {
     this.setState({
       isConnected: true
     });
   }
 
   errorCallback(msg) {
-    logger.log("error: " + msg);
+    logger.error("Failed to connect to backend: " + msg);
     this.setState({
       isConnected: false
     });
@@ -111,6 +97,7 @@ class DeploymentContainer extends React.Component {
   }
 
   reconnect() {
+    logger.log('Attempting to reconnect to backend...');
     this.stompClient = new StompClient(
       process.env.BACKEND,
       "/sockjs-websocket"
@@ -129,51 +116,43 @@ class DeploymentContainer extends React.Component {
   }
 
   requestQuestion(address) {
-    // Check validity of address before requesting
-    if (this.web3.isAddress(address)) {
-      // Instantiate contract from abi & contract address provided via GUI
-      let ballotContract = this.web3.eth.contract(abi).at(address);
-      ballotContract.getProposedQuestion((err, res) => {
-        if (!err) {
-          this.setState({
-            contractAddress: address,
-            votingQuestion: res
-          });
-        } else {
-          logger.error(err);
-        }
-      });
-    }
-  }
+    // Instantiate contract from abi & contract address provided via GUI
+    let ballotContract = this.web3.eth.contract(abi).at(address);
 
-  onQuestionReceived(msg) {
-    this.setState((previousState, props) => {
-      if (msg.hasOwnProperty('responseType') && msg.status === 'success') {
-        if (msg.responseType === 'get-question-event') {
-          previousState.votingQuestion = msg.question;
-        }
-      } else if (msg.hasOwnProperty('responseType') && msg.status === 'error') {
-        logger.log("Error on retrieved question: " + msg);
+    ballotContract.getProposedQuestion((err, res) => {
+      if (!err) {
+        this.setState({
+          contractAddress: address,
+          votingQuestion: res,
+          lastOccurredEvent: {
+            id: Date.now(),
+            status: 'success',
+            message: 'Fetched voting question from blockchain: ' + res
+          }
+        });
+      } else {
+        this.setState({
+          lastOccurredEvent: {
+            id: Date.now(),
+            status: 'error',
+            message: 'Failed to retrieve voting question from blockchain: ' + err
+          }
+        });
       }
-
-      return {
-        lastOccurredEvent: msg,
-        votingQuestion: previousState.votingQuestion
-      };
     });
   }
 
-  submitVoteClickHandler(vote) {
-    this.submitVote(vote);
+  generateProofClickHandler(vote) {
+    this.generateProof(vote);
   }
 
-  submitVote(vote) {
+  generateProof(vote) {
     let numericVote = parseInt(vote.vote);
 
     axios.post("/encryption/generate", {
       vote: numericVote
     }).then(response => {
-      logger.log('Retrieved encrypted vote and proof: ' + response);
+      logger.log('Retrieved encrypted vote and proof');
 
       if (!(response.data.hasOwnProperty('ciphertext') && response.data.hasOwnProperty('proof') && response.data.hasOwnProperty('random'))) {
         logger.error('Response does not contain ciphertext, proof and/or random. Not submitting vote.');
@@ -181,61 +160,61 @@ class DeploymentContainer extends React.Component {
         return;
       }
 
-      let rawTxTo = this.state.contractAddress;
-      let block = this.web3.eth.getBlock("latest");
-      const privKeyBuffer = Buffer.from(this.state.votingPrivKey, 'hex');
-      let rawTxFrom = '0x' + ethUtil.privateToAddress(privKeyBuffer).toString('hex');
-      let rawTxGasLimit = block.gasLimit;
-      let rawTxGasPrice = this.web3.toHex("22000000000");
-      let rawTxNonce = "0x00";
-      let rawTxValue = "0x0";
-
-      let ballotContract = this.web3.eth.contract(abi).at(this.state.contractAddress);
-      let rawTxData = ballotContract.vote.getData(response.data.ciphertext, response.data.proof, response.data.random.valueOf());
-      let rawTxGas = this.web3.eth.estimateGas({to:rawTxTo, data: rawTxData});
-
-      const txParams = {
-        nonce: rawTxNonce,
-        gasPrice: rawTxGasPrice,
-        gasLimit: rawTxGasLimit,
-        to: rawTxTo,
-        from: rawTxFrom,
-        value: rawTxValue,
-        data: rawTxData,
-        gas: rawTxGas,
-        chainId: 15
-      };
-
-      const tx = new ethTx(txParams);
-      tx.sign(privKeyBuffer);
-      const serializedTx = tx.serialize();
-      const rawTx = '0x' + serializedTx.toString('hex');
-      logger.log("rawTx" + rawTx);
-      this.web3.eth.sendRawTransaction(rawTx.toString(), (msg) => {
-        logger.log(msg);
-        // Nonce too low after one try (Obviously would need to be increased,
-        // but this is actually not bad, so there can't be two votes with the same
-        // private key
+      this.setState({
+        ciphertext: response.data.ciphertext,
+        proof: response.data.proof,
+        random: response.data.random
       });
-
-      }).catch(error => logger.error('Failed to retrieve encrypted vote and proof: ' + error));
+    }).catch(error => logger.error('Failed to retrieve encrypted vote and proof: ' + error));
   }
 
-  onIncorporatedVote(msg) {
-    this.setState((previousState, props) => {
+  submitVoteClickHandler() {
+    this.submitVote();
+  }
 
-      if (msg.hasOwnProperty('responseType') && msg.status === 'success') {
-        if (msg.responseType === 'vote') {
-          previousState.votingTrxHash = msg.transaction;
+  submitVote() {
+    let rawTxTo = this.state.contractAddress;
+    let block = this.web3.eth.getBlock("latest");
+    const privKeyBuffer = Buffer.from(this.state.votingPrivateKey, 'hex');
+    let rawTxFrom = '0x' + ethUtil.privateToAddress(privKeyBuffer).toString('hex');
+    let rawTxGasLimit = block.gasLimit;
+    let rawTxGasPrice = this.web3.toHex("22000000000");
+    let rawTxNonce = "0x00";
+    let rawTxValue = "0x0";
+
+    let ballotContract = this.web3.eth.contract(abi).at(this.state.contractAddress);
+    let rawTxData = ballotContract.vote.getData(this.state.ciphertext, this.state.proof, this.state.random.valueOf());
+    let rawTxGas = this.web3.eth.estimateGas({to: rawTxTo, data: rawTxData});
+
+    const txParams = {
+      nonce: rawTxNonce,
+      gasPrice: rawTxGasPrice,
+      gasLimit: rawTxGasLimit,
+      to: rawTxTo,
+      from: rawTxFrom,
+      value: rawTxValue,
+      data: rawTxData,
+      gas: rawTxGas,
+      chainId: 15
+    };
+
+    const tx = new ethTx(txParams);
+    tx.sign(privKeyBuffer);
+    const serializedTx = tx.serialize();
+    const rawTx = '0x' + serializedTx.toString('hex');
+    this.web3.eth.sendRawTransaction(rawTx.toString(), (err, trx) => {
+      // Nonce too low after one try (Obviously would need to be increased,
+      // but this is actually not bad, so there can't be two votes with the same
+      // private key
+
+      this.setState({
+        lastOccurredEvent: {
+          id: Date.now(),
+          status: 'success',
+          message: 'Your vote has been submitted to the blockchain',
+          transaction: trx
         }
-      } else if (msg.hasOwnProperty('responseType') && msg.status === 'error') {
-        logger.log("Error on vote: " + msg);
-      }
-
-      return {
-        lastOccurredEvent: msg,
-        votingTrxHash: previousState.votingTrxHash
-      };
+      });
     });
   }
 
@@ -256,13 +235,23 @@ class DeploymentContainer extends React.Component {
             <FetchQuestionBtnCard
               isConnected={this.state.isConnected}
               web3={this.state.web3}
-              actions={{onClickHandler: this.requestQuestionClickHandler}}/>
+              actions={{onClickHandler: this.requestQuestionClickHandler}}
+              validators={{addressValidator: this.web3.isAddress}}
+            />
           </Col>
           <Col {...smallColResponsiveProps}>
             <VoteBtnCard
               isConnected={this.state.isConnected}
               votingQuestion={this.state.votingQuestion}
-              actions={{onClickHandler: this.submitVoteClickHandler}}/>
+              actions={{
+                onGenerateProofClickHandler: this.generateProofClickHandler,
+                onSubmitVoteClickHandler: this.submitVoteClickHandler
+              }}/>
+            <ChallengeVoteBtnCard
+              isConnected={this.state.isConnected}
+              ciphertext={this.state.ciphertext}
+              proof={this.state.proof}
+            />
           </Col>
           <Col {...wideColResponsiveProps}>
             <EventLogCard lastOccurredEvent={this.state.lastOccurredEvent}/>

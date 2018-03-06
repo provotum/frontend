@@ -27,12 +27,8 @@ class FetchQuestionBtnCard extends React.Component {
   render() {
     const {getFieldDecorator, getFieldsError} = this.props.form;
 
-    let isButtonDisabled = false;
-    if (!this.props.isConnected || hasErrors(getFieldsError())) {
-      isButtonDisabled = true;
-    }
-
-    let isInputDisabled = (this.props.isConnected) ? false : true;
+    let isButtonDisabled = ! this.props.isConnected;
+    let isInputDisabled = !this.props.isConnected;
 
 
     return (
@@ -41,7 +37,25 @@ class FetchQuestionBtnCard extends React.Component {
           <Row>
             <Form.Item>
               {getFieldDecorator('address', {
-                rules: [{required: true, message: 'Please enter the ballot contract address'}]
+                rules: [
+                  {
+                    required: true,
+                    message: 'Please enter the ballot contract address',
+                    validator: (rule, value, callback) => {
+                      // avoid firing this validator if the value is not present
+                      if (undefined === value) {
+                        callback(false);
+                      } else {
+                        if (this.props.validators.addressValidator(value)) {
+                          // no argument -> validation is ok
+                          callback();
+                        } else {
+                          callback(false);
+                        }
+                      }
+                    }
+                  }
+                ]
               })(
                 <Input
                   disabled={isInputDisabled}
@@ -67,6 +81,9 @@ FetchQuestionBtnCard.propTypes = {
   isConnected: PropTypes.bool.isRequired,
   actions: PropTypes.shape({
     onClickHandler: PropTypes.func.isRequired
+  }),
+  validators: PropTypes.shape({
+    addressValidator: PropTypes.func.isRequired
   }),
   form: PropTypes.object
 };
