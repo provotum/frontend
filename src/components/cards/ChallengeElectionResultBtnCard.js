@@ -15,7 +15,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
 
     this.state = {
       valid: null,
-      sum: 0,
+      sum: null,
       ciphertext: '',
       proof: ''
     };
@@ -79,7 +79,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
 
   render() {
     let isFetchButtonDisabled = (!this.props.isConnected) || !this.props.ballotContract;
-    let isChallengeButtonDisabled = ! this.state.ciphertext || ! this.state.proof || ! this.state.sum;
+    let isChallengeButtonDisabled = ! this.state.ciphertext || ! this.state.proof || (0 !== this.state.sum && ! this.state.sum);
 
     let backgroundColor = (this.state.valid === null) ? '#d5d5d5' : ((this.state.valid) ? '#52c41a' : '#f5222d');
     let connectionStatus = (this.state.valid === null) ? 'not yet queried' : ((this.state.valid) ? 'success' : 'invalid');
@@ -111,7 +111,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
             <Form.Item>
               <UpdatedTextInput
                 id={'election-sum-sum'}
-                value={this.state.sum} type={'text'}
+                value={(this.state.sum !== null) ? this.state.sum.toString() : this.state.sum} type={'text'}
                 prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
                 placeholder="sum"/>
             </Form.Item>
