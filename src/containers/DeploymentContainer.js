@@ -11,7 +11,7 @@ import VoteBtnCard from "../components/cards/VoteBtnCard";
 import ethTx from "ethereumjs-tx";
 import ethUtil from "ethereumjs-util";
 import ChallengeVoteBtnCard from "../components/cards/ChallengeVoteBtnCard";
-import FetchElectionResultBtnCard from "../components/cards/FetchElectionResultBtnCard";
+import ChallengeElectionResultsBtnCard from "../components/cards/ChallengeElectionResultBtnCard";
 
 class DeploymentContainer extends React.Component {
 
@@ -244,7 +244,7 @@ class DeploymentContainer extends React.Component {
               actions={{onClickHandler: this.requestQuestionClickHandler}}
               validators={{addressValidator: this.web3.isAddress}}
             />
-            <FetchElectionResultBtnCard
+            <ChallengeElectionResultsBtnCard
               isConnected={this.state.isConnected}
               ballotContract={this.state.ballotContract}
             />

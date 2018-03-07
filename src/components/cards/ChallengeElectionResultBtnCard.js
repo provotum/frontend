@@ -3,47 +3,9 @@ import {Badge, Button, Card, Col, Form, Icon, Input, Row} from "antd";
 import PropTypes from "prop-types";
 import axios from "axios/index";
 import logger from "react-logger";
+import UpdatedTextInput from "../UpdatedTextInput";
 
-class UpdatedTextInput extends React.Component {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      value: props.value
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.hasOwnProperty('value') && nextProps.value) {
-      this.setState({
-        value: nextProps.value
-      });
-    }
-  }
-
-  handleChange(event) {
-    this.setState({value: event.target.value});
-  }
-
-  render() {
-    return (
-      <div>
-        <input id={this.props.id} className={"ant-input"} type={"value"}
-               value={this.state.value ? this.state.value : ''} onChange={this.handleChange}/>
-      </div>
-    );
-  }
-}
-
-UpdatedTextInput.propTypes = {
-  id: PropTypes.string,
-  value: PropTypes.any
-};
-
-class FetchElectionResultBtnCard extends React.Component {
+class ChallengeElectionResultBtnCard extends React.Component {
   constructor(props) {
     super(props);
 
@@ -116,7 +78,8 @@ class FetchElectionResultBtnCard extends React.Component {
   }
 
   render() {
-    let isButtonDisabled = (!this.props.isConnected);
+    let isFetchButtonDisabled = (!this.props.isConnected) || !this.props.ballotContract;
+    let isChallengeButtonDisabled = ! this.state.ciphertext || ! this.state.proof || ! this.state.sum;
 
     let backgroundColor = (this.state.valid === null) ? '#d5d5d5' : ((this.state.valid) ? '#52c41a' : '#f5222d');
     let connectionStatus = (this.state.valid === null) ? 'not yet queried' : ((this.state.valid) ? 'success' : 'invalid');
@@ -155,12 +118,14 @@ class FetchElectionResultBtnCard extends React.Component {
           </Row>
           <Row>
             <Col span={24} style={{textAlign: 'right'}}>
-              <Button type="primary" htmlType="submit" disabled={isButtonDisabled ? "disabled" : false}>
-                Fetch Results
-              </Button>
-              <Button type="default" htmlType="button" onClick={this.challengeSumProof} disabled={isButtonDisabled ? "disabled" : false}>
-                Challenge Sum Proof
-              </Button>
+              <Button.Group size={2}>
+                <Button type="primary" htmlType="submit" disabled={isFetchButtonDisabled ? "disabled" : false}>
+                  Fetch Results
+                </Button>
+                <Button type="default" htmlType="button" onClick={this.challengeSumProof} disabled={isChallengeButtonDisabled ? "disabled" : false}>
+                  Challenge Sum
+                </Button>
+              </Button.Group>
             </Col>
           </Row>
         </Form>
@@ -169,10 +134,10 @@ class FetchElectionResultBtnCard extends React.Component {
   }
 }
 
-FetchElectionResultBtnCard.propTypes = {
+ChallengeElectionResultBtnCard.propTypes = {
   isConnected: PropTypes.bool.isRequired,
   ballotContract: PropTypes.object,
   form: PropTypes.object
 };
 
-export default Form.create()(FetchElectionResultBtnCard);
+export default Form.create()(ChallengeElectionResultBtnCard);

@@ -2,46 +2,7 @@ import React from "react";
 import {Button, Card, Col, Form, Icon, Input, Badge, Row, Alert} from "antd";
 import PropTypes from "prop-types";
 import axios from "axios";
-
-
-class UpdatedTextInput extends React.Component {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      value: props.value
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.hasOwnProperty('value') && nextProps.value) {
-      this.setState({
-        value: nextProps.value
-      });
-    }
-  }
-
-  handleChange(event) {
-    this.setState({value: event.target.value});
-  }
-
-  render() {
-    return (
-      <div>
-        <input id={this.props.id} className={"ant-input"} type={"value"}
-               value={this.state.value ? this.state.value : ''} onChange={this.handleChange}/>
-      </div>
-    );
-  }
-}
-
-UpdatedTextInput.propTypes = {
-  id: PropTypes.string,
-  value: PropTypes.string
-};
+import UpdatedTextInput from "../UpdatedTextInput";
 
 class ChallengeVoteBtnCard extends React.Component {
   constructor(props) {
@@ -81,7 +42,7 @@ class ChallengeVoteBtnCard extends React.Component {
   }
 
   render() {
-    let isButtonDisabled = (!this.props.isConnected) && this.props.ciphertext && this.props.proof;
+    let isButtonDisabled = (!this.props.isConnected) || !this.props.ciphertext || !this.props.proof;
 
     let backgroundColor = (this.state.valid === null) ? '#d5d5d5' : ((this.state.valid) ? '#52c41a' : '#f5222d');
     let connectionStatus = (this.state.valid === null) ? 'not yet queried' : ((this.state.valid) ? 'success' : 'invalid');
@@ -111,8 +72,9 @@ class ChallengeVoteBtnCard extends React.Component {
           </Row>
           <Row>
             <Col span={24} style={{textAlign: 'right'}}>
-              <Button type="primary" htmlType="submit" disabled={isButtonDisabled ? "disabled" : false}>Challenge
-                Proof</Button>
+              <Button type="primary" htmlType="submit" disabled={isButtonDisabled ? "disabled" : false}>
+                Challenge Vote
+              </Button>
             </Col>
           </Row>
         </Form>

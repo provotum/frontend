@@ -36,7 +36,7 @@ class VoteBtnCard extends React.Component {
       if (!err) {
         this.props.actions.onSubmitVoteClickHandler(this.props.form.getFieldsValue());
         this.setState({
-            voteSubmitted: true
+          voteSubmitted: true
         });
       }
     });
@@ -65,10 +65,15 @@ class VoteBtnCard extends React.Component {
           </Row>
           <Row>
             <Col span={24} style={{textAlign: 'right'}}>
-              <Button type="primary" htmlType="submit" disabled={isButtonDisabled ? "disabled" : false}>Encrypt
-                Vote</Button>
-              <Button type={"default"} onClick={this.onVoteClickSubmitHandler}
-                      disabled={isButtonDisabled ? "disabled" : false}>Submit Vote</Button>
+              <Button.Group size={2}>
+                <Button type="primary" htmlType="submit" disabled={isButtonDisabled ? "disabled" : false}>
+                  Encrypt Vote
+                </Button>
+                <Button type={"default"} onClick={this.onVoteClickSubmitHandler}
+                        disabled={isButtonDisabled ? "disabled" : false}>
+                  Submit Vote
+                </Button>
+              </Button.Group>
             </Col>
           </Row>
         </Form>
