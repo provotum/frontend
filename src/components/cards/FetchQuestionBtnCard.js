@@ -2,10 +2,6 @@ import React from "react";
 import {Button, Card, Col, Form, Icon, Input, Row} from "antd";
 import PropTypes from "prop-types";
 
-function hasErrors(fieldsError) {
-  return Object.keys(fieldsError).some(field => fieldsError[field]);
-}
-
 class FetchQuestionBtnCard extends React.Component {
   constructor(props) {
     super(props);

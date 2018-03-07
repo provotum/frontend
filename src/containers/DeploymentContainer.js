@@ -11,6 +11,7 @@ import VoteBtnCard from "../components/cards/VoteBtnCard";
 import ethTx from "ethereumjs-tx";
 import ethUtil from "ethereumjs-util";
 import ChallengeVoteBtnCard from "../components/cards/ChallengeVoteBtnCard";
+import FetchElectionResultBtnCard from "../components/cards/FetchElectionResultBtnCard";
 
 class DeploymentContainer extends React.Component {
 
@@ -29,7 +30,8 @@ class DeploymentContainer extends React.Component {
       votingPrivateKey: null,
       ciphertext: null,
       proof: null,
-      random: null
+      random: null,
+      ballotContract: null
     };
 
     this.requestQuestion = this.requestQuestion.bind(this);
@@ -118,6 +120,10 @@ class DeploymentContainer extends React.Component {
   requestQuestion(address) {
     // Instantiate contract from abi & contract address provided via GUI
     let ballotContract = this.web3.eth.contract(abi).at(address);
+
+    this.setState({
+      ballotContract: ballotContract
+    });
 
     ballotContract.getProposedQuestion((err, res) => {
       if (!err) {
@@ -238,6 +244,10 @@ class DeploymentContainer extends React.Component {
               actions={{onClickHandler: this.requestQuestionClickHandler}}
               validators={{addressValidator: this.web3.isAddress}}
             />
+            <FetchElectionResultBtnCard
+              isConnected={this.state.isConnected}
+              ballotContract={this.state.ballotContract}
+            />
           </Col>
           <Col {...smallColResponsiveProps}>
             <VoteBtnCard
@@ -279,6 +289,28 @@ let abi = [
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "sum",
+        "type": "uint256"
+      },
+      {
+        "name": "ciphertext",
+        "type": "string"
+      },
+      {
+        "name": "proof",
+        "type": "string"
+      }
+    ],
+    "name": "setSumProof",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -350,6 +382,28 @@ let abi = [
     ],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getSumProof",
+    "outputs": [
+      {
+        "name": "sum",
+        "type": "uint256"
+      },
+      {
+        "name": "ciphertext",
+        "type": "string"
+      },
+      {
+        "name": "proof",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
