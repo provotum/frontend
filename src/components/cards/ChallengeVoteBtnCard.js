@@ -48,7 +48,7 @@ class ChallengeVoteBtnCard extends React.Component {
     let connectionStatus = (this.state.valid === null) ? 'not yet queried' : ((this.state.valid) ? 'success' : 'invalid');
 
     return (
-      <Card title="Challenge Vote Panel"
+      <Card title="Challenge Vote"
             extra={<Badge style={{backgroundColor: backgroundColor}} count={connectionStatus}/>}>
 
         <Form onSubmit={this.handleSubmit}>

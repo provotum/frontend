@@ -214,6 +214,7 @@ class DeploymentContainer extends React.Component {
       // private key
 
       this.setState({
+        votingTrxHash: trx,
         lastOccurredEvent: {
           id: Date.now(),
           status: 'success',

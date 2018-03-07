@@ -54,7 +54,7 @@ class VoteBtnCard extends React.Component {
     let isSubmitVoteButtonDisabled = isEncryptVoteButtonDisabled || ! this.state.voteEncrypted;
 
     return (
-      <Card title="Vote Panel">
+      <Card title="Vote">
         <Alert message="Voting Question"
                description={this.props.votingQuestion ? this.props.votingQuestion : 'Not yet fetched'} type="info"/>
         <Form onSubmit={this.onGenerateProofClickSubmitHandler}>

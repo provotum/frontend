@@ -28,7 +28,7 @@ class FetchQuestionBtnCard extends React.Component {
 
 
     return (
-      <Card title="Fetch Question Panel">
+      <Card title="Fetch Question">
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Form.Item>
