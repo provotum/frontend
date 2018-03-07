@@ -15,6 +15,7 @@ class VoteBtnCard extends React.Component {
     this.onVoteClickSubmitHandler = this.onVoteClickSubmitHandler.bind(this);
 
     this.state = {
+      voteEncrypted: false,
       voteSubmitted: false
     };
   }
@@ -25,6 +26,9 @@ class VoteBtnCard extends React.Component {
     this.props.form.validateFields((err) => {
       if (!err) {
         this.props.actions.onGenerateProofClickHandler(this.props.form.getFieldsValue());
+        this.setState({
+          voteEncrypted: true
+        });
       }
     });
   }
@@ -46,7 +50,8 @@ class VoteBtnCard extends React.Component {
   render() {
     const {getFieldDecorator, getFieldsError} = this.props.form;
 
-    let isButtonDisabled = (!this.props.isConnected) || this.state.voteSubmitted || null === this.props.votingQuestion || hasErrors(getFieldsError());
+    let isEncryptVoteButtonDisabled = (!this.props.isConnected) || this.state.voteSubmitted || null === this.props.votingQuestion || hasErrors(getFieldsError());
+    let isSubmitVoteButtonDisabled = isEncryptVoteButtonDisabled || ! this.state.voteEncrypted;
 
     return (
       <Card title="Vote Panel">
@@ -66,11 +71,11 @@ class VoteBtnCard extends React.Component {
           <Row>
             <Col span={24} style={{textAlign: 'right'}}>
               <Button.Group size={2}>
-                <Button type="primary" htmlType="submit" disabled={isButtonDisabled ? "disabled" : false}>
+                <Button type="primary" htmlType="submit" disabled={isEncryptVoteButtonDisabled ? "disabled" : false}>
                   Encrypt Vote
                 </Button>
                 <Button type={"default"} onClick={this.onVoteClickSubmitHandler}
-                        disabled={isButtonDisabled ? "disabled" : false}>
+                        disabled={isSubmitVoteButtonDisabled ? "disabled" : false}>
                   Submit Vote
                 </Button>
               </Button.Group>

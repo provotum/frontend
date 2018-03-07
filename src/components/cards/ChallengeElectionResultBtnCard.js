@@ -63,9 +63,9 @@ class ChallengeElectionResultBtnCard extends React.Component {
     e.preventDefault();
 
     this.backend.post('/encryption/verify-sum', {
-      'sum': document.getElementById('sum').value,
-      'ciphertext': document.getElementById('ciphertext').value,
-      'proof': document.getElementById('proof').value
+      'sum': document.getElementById('election-sum-sum').value,
+      'ciphertext': document.getElementById('election-sum-ciphertext').value,
+      'proof': document.getElementById('election-sum-proof').value
     }).then(() => {
       this.setState({
         valid: true
@@ -92,7 +92,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
           <Row>
             <Form.Item>
               <UpdatedTextInput
-                id={'ciphertext'}
+                id={'election-sum-ciphertext'}
                 value={this.state.ciphertext} type={'text'}
                 prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
                 placeholder="ciphertext"/>
@@ -101,7 +101,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
           <Row>
             <Form.Item>
               <UpdatedTextInput
-                id={'proof'}
+                id={'election-sum-proof'}
                 value={this.state.proof} type={'text'}
                 prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
                 placeholder="proof"/>
@@ -110,7 +110,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
           <Row>
             <Form.Item>
               <UpdatedTextInput
-                id={'sum'}
+                id={'election-sum-sum'}
                 value={this.state.sum} type={'text'}
                 prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
                 placeholder="sum"/>
@@ -119,10 +119,10 @@ class ChallengeElectionResultBtnCard extends React.Component {
           <Row>
             <Col span={24} style={{textAlign: 'right'}}>
               <Button.Group size={2}>
-                <Button type="primary" htmlType="submit" disabled={isFetchButtonDisabled ? "disabled" : false}>
+                <Button type="default" htmlType="submit" disabled={isFetchButtonDisabled ? "disabled" : false}>
                   Fetch Results
                 </Button>
-                <Button type="default" htmlType="button" onClick={this.challengeSumProof} disabled={isChallengeButtonDisabled ? "disabled" : false}>
+                <Button type="primary" htmlType="button" onClick={this.challengeSumProof} disabled={isChallengeButtonDisabled ? "disabled" : false}>
                   Challenge Sum
                 </Button>
               </Button.Group>

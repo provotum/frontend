@@ -26,8 +26,8 @@ class ChallengeVoteBtnCard extends React.Component {
     this.props.form.validateFields((err) => {
       if (!err) {
         this.backend.post('/encryption/verify', {
-          'ciphertext': document.getElementById('ciphertext').value,
-          'proof': document.getElementById('proof').value
+          'ciphertext': document.getElementById('vote-ciphertext').value,
+          'proof': document.getElementById('vote-proof').value
         }).then(() => {
           this.setState({
             valid: true
@@ -55,7 +55,7 @@ class ChallengeVoteBtnCard extends React.Component {
           <Row>
             <Form.Item>
               <UpdatedTextInput
-                id={'ciphertext'}
+                id={'vote-ciphertext'}
                 value={this.props.ciphertext} type={'text'}
                 prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
                 placeholder="Your ciphertext?"/>
@@ -64,7 +64,7 @@ class ChallengeVoteBtnCard extends React.Component {
           <Row>
             <Form.Item>
               <UpdatedTextInput
-                id={'proof'}
+                id={'vote-proof'}
                 value={this.props.proof} type={'text'}
                 prefix={<Icon type="question-circle-o" style={{color: 'rgba(0,0,0,.25)'}}/>}
                 placeholder="Your proof?"/>

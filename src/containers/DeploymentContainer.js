@@ -244,23 +244,24 @@ class DeploymentContainer extends React.Component {
               actions={{onClickHandler: this.requestQuestionClickHandler}}
               validators={{addressValidator: this.web3.isAddress}}
             />
-            <ChallengeElectionResultsBtnCard
-              isConnected={this.state.isConnected}
-              ballotContract={this.state.ballotContract}
-            />
-          </Col>
-          <Col {...smallColResponsiveProps}>
             <VoteBtnCard
               isConnected={this.state.isConnected}
               votingQuestion={this.state.votingQuestion}
               actions={{
                 onGenerateProofClickHandler: this.generateProofClickHandler,
                 onSubmitVoteClickHandler: this.submitVoteClickHandler
-              }}/>
+              }}
+            />
+          </Col>
+          <Col {...smallColResponsiveProps}>
             <ChallengeVoteBtnCard
               isConnected={this.state.isConnected}
               ciphertext={this.state.ciphertext}
               proof={this.state.proof}
+            />
+            <ChallengeElectionResultsBtnCard
+              isConnected={this.state.isConnected}
+              ballotContract={this.state.ballotContract}
             />
           </Col>
           <Col {...wideColResponsiveProps}>
