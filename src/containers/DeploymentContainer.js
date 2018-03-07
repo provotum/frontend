@@ -213,15 +213,26 @@ class DeploymentContainer extends React.Component {
       // but this is actually not bad, so there can't be two votes with the same
       // private key
 
-      this.setState({
-        votingTrxHash: trx,
-        lastOccurredEvent: {
-          id: Date.now(),
-          status: 'success',
-          message: 'Your vote has been submitted to the blockchain',
-          transaction: trx
-        }
-      });
+      if (err) {
+        this.setState({
+          lastOccurredEvent: {
+            id: Date.now(),
+            status: 'error',
+            message: err.message,
+            transaction: trx
+          }
+        });
+      } else {
+        this.setState({
+          votingTrxHash: trx,
+          lastOccurredEvent: {
+            id: Date.now(),
+            status: 'success',
+            message: 'Your vote has been submitted to the blockchain',
+            transaction: trx
+          }
+        });
+      }
     });
   }
 
