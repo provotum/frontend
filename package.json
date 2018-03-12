@@ -7,7 +7,8 @@
     "start": "npm-run-all --parallel open:src lint:watch",
     "open:src": "babel-node tools/srcServer.js",
     "lint": "node_modules/.bin/esw webpack.config.* src tools",
-    "lint:watch": "npm run lint -- --watch"
+    "lint:watch": "npm run lint -- --watch",
+    "build": "webpack --config webpack.config.prod.js"
   },
   "author": "It's us!",
   "license": "MIT",
@@ -31,6 +32,7 @@
     "reactjs-localstorage": "0.0.6",
     "sockjs-client": "^1.1.4",
     "style-loader": "^0.19.1",
+    "uglifyjs-webpack-plugin": "^1.2.3",
     "web3": "^0.20.5"
   },
   "devDependencies": {
