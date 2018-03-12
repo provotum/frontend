@@ -1,3 +1,5 @@
+process.env.NODE_ENV="production"
+
 const webpack = require("webpack");
 const path = require("path");
 const Dotenv = require('dotenv-webpack');
