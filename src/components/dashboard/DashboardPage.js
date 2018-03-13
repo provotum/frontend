@@ -1,6 +1,6 @@
 import React from 'react';
 import DeploymentContainer from "../../containers/DeploymentContainer";
-import {Breadcrumb, Row} from 'antd';
+import {Row} from 'antd';
 import PropTypes from "prop-types";
 
 class DashboardPage extends React.Component {
@@ -15,9 +15,6 @@ class DashboardPage extends React.Component {
   render() {
     return (
       <div>
-        <Breadcrumb style={{margin: '16px 0'}}>
-          <Breadcrumb.Item>{this.props.location.pathname}</Breadcrumb.Item>
-        </Breadcrumb>
         <Row gutter={24}>
           <DeploymentContainer/>
         </Row>
