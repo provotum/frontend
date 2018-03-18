@@ -201,7 +201,7 @@ class DeploymentContainer extends React.Component {
       value: rawTxValue,
       data: rawTxData,
       gas: rawTxGas,
-      chainId: 15
+      chainId: 187
     };
 
     const tx = new ethTx(txParams);
