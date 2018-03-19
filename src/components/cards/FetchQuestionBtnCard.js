@@ -58,6 +58,7 @@ class FetchQuestionBtnCard extends React.Component {
 
     return (
       <Card title="Fetch Question">
+        <Card.Meta description={"Ballot Contract Address"}/>
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Form.Item>

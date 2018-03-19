@@ -1,5 +1,5 @@
 import React from "react";
-import {Badge, Button, Card, Col, Form, Icon, Input, Row} from "antd";
+import {Badge, Button, Card, Col, Form, Icon, Tooltip, Row} from "antd";
 import PropTypes from "prop-types";
 import axios from "axios/index";
 import logger from "react-logger";
@@ -79,7 +79,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
 
   render() {
     let isFetchButtonDisabled = (!this.props.isConnected) || !this.props.ballotContract;
-    let isChallengeButtonDisabled = ! this.state.ciphertext || ! this.state.proof || (0 !== this.state.sum && ! this.state.sum);
+    let isChallengeButtonDisabled = !this.state.ciphertext || !this.state.proof || (0 !== this.state.sum && !this.state.sum);
 
     let backgroundColor = (this.state.valid === null) ? '#d5d5d5' : ((this.state.valid) ? '#52c41a' : '#f5222d');
     let connectionStatus = (this.state.valid === null) ? 'not yet queried' : ((this.state.valid) ? 'success' : 'invalid');
@@ -87,10 +87,11 @@ class ChallengeElectionResultBtnCard extends React.Component {
     return (
       <Card title="Challenge Election Result"
             extra={<Badge style={{backgroundColor: backgroundColor}} count={connectionStatus}/>}>
-
+        <span>The election result is available after the voting authorities have published the results to the ballot contract.</span>
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Form.Item>
+              <Card.Meta description={"Election Sum Ciphertext"}/>
               <UpdatedTextInput
                 id={'election-sum-ciphertext'}
                 value={this.state.ciphertext} type={'text'}
@@ -100,6 +101,7 @@ class ChallengeElectionResultBtnCard extends React.Component {
           </Row>
           <Row>
             <Form.Item>
+              <Card.Meta description={"Election Sum Proof"}/>
               <UpdatedTextInput
                 id={'election-sum-proof'}
                 value={this.state.proof} type={'text'}
@@ -109,6 +111,10 @@ class ChallengeElectionResultBtnCard extends React.Component {
           </Row>
           <Row>
             <Form.Item>
+              <Tooltip title="Note, that only the sum of supporting votes is displayed. To obtain the voting result, you may
+                look at the total vote-transactions and subtract the sum displayed below.">
+                <span>Election Sum <Icon type="question-circle"/></span>
+              </Tooltip>
               <UpdatedTextInput
                 id={'election-sum-sum'}
                 value={(this.state.sum !== null) ? this.state.sum.toString() : this.state.sum} type={'text'}
@@ -122,7 +128,8 @@ class ChallengeElectionResultBtnCard extends React.Component {
                 <Button type="default" htmlType="submit" disabled={isFetchButtonDisabled ? "disabled" : false}>
                   Fetch Results
                 </Button>
-                <Button type="primary" htmlType="button" onClick={this.challengeSumProof} disabled={isChallengeButtonDisabled ? "disabled" : false}>
+                <Button type="primary" htmlType="button" onClick={this.challengeSumProof}
+                        disabled={isChallengeButtonDisabled ? "disabled" : false}>
                   Challenge Sum
                 </Button>
               </Button.Group>

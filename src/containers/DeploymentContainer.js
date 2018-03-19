@@ -250,31 +250,45 @@ class DeploymentContainer extends React.Component {
         </Row>
         <Row gutter={24}>
           <Col {...smallColResponsiveProps}>
-            <FetchQuestionBtnCard
-              isConnected={this.state.isConnected}
-              web3={this.state.web3}
-              actions={{onClickHandler: this.requestQuestionClickHandler}}
-              validators={{addressValidator: this.web3.isAddress}}
-            />
-            <VoteBtnCard
-              isConnected={this.state.isConnected}
-              votingQuestion={this.state.votingQuestion}
-              actions={{
-                onGenerateProofClickHandler: this.generateProofClickHandler,
-                onSubmitVoteClickHandler: this.submitVoteClickHandler
-              }}
-            />
+            <Row>
+              <Col style={{marginBottom: 25}}>
+                <FetchQuestionBtnCard
+                  isConnected={this.state.isConnected}
+                  web3={this.state.web3}
+                  actions={{onClickHandler: this.requestQuestionClickHandler}}
+                  validators={{addressValidator: this.web3.isAddress}}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <VoteBtnCard
+                  isConnected={this.state.isConnected}
+                  votingQuestion={this.state.votingQuestion}
+                  actions={{
+                    onGenerateProofClickHandler: this.generateProofClickHandler,
+                    onSubmitVoteClickHandler: this.submitVoteClickHandler
+                  }}
+                />
+              </Col>
+            </Row>
           </Col>
           <Col {...smallColResponsiveProps}>
-            <ChallengeVoteBtnCard
-              isConnected={this.state.isConnected}
-              ciphertext={this.state.ciphertext}
-              proof={this.state.proof}
-            />
-            <ChallengeElectionResultsBtnCard
-              isConnected={this.state.isConnected}
-              ballotContract={this.state.ballotContract}
-            />
+            <Row>
+              <Col style={{marginBottom: 25}}>
+                <ChallengeVoteBtnCard
+                  isConnected={this.state.isConnected}
+                  ciphertext={this.state.ciphertext}
+                  proof={this.state.proof}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <ChallengeElectionResultsBtnCard
+                isConnected={this.state.isConnected}
+                ballotContract={this.state.ballotContract}
+              />
+            </Row>
           </Col>
           <Col {...wideColResponsiveProps}>
             <EventLogCard lastOccurredEvent={this.state.lastOccurredEvent}/>

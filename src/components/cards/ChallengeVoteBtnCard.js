@@ -54,6 +54,7 @@ class ChallengeVoteBtnCard extends React.Component {
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Form.Item>
+              <Card.Meta description={"Vote Ciphertext"}/>
               <UpdatedTextInput
                 id={'vote-ciphertext'}
                 value={this.props.ciphertext} type={'text'}
@@ -63,6 +64,7 @@ class ChallengeVoteBtnCard extends React.Component {
           </Row>
           <Row>
             <Form.Item>
+              <Card.Meta description={"Vote Proof"}/>
               <UpdatedTextInput
                 id={'vote-proof'}
                 value={this.props.proof} type={'text'}
