@@ -1,7 +1,7 @@
 # Voting Frontend
 
 
-![Voting Frontend](https://github.com/provotum/meta/raw/c8d381f4b3e0c39248757db349964c66bfa25dbf/voter-admin.png)
+![Voting Frontend](https://github.com/provotum/meta/raw/c8d381f4b3e0c39248757db349964c66bfa25dbf/voter-frontend.png)
 
 
 This repository holds the voting frontend to submit votes to the blockchain.
